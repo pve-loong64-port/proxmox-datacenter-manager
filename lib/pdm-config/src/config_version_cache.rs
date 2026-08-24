@@ -31,14 +31,29 @@ struct ConfigVersionCacheDataInner {
 }
 
 #[repr(C)]
+#[cfg(not(target_arch = "loongarch64"))]
 union ConfigVersionCacheData {
     data: ManuallyDrop<ConfigVersionCacheDataInner>,
     _padding: [u8; 4096],
 }
 
+#[repr(C)]
+#[cfg(target_arch = "loongarch64")]
+union ConfigVersionCacheData {
+    data: ManuallyDrop<ConfigVersionCacheDataInner>,
+    _padding: [u8; 16384],
+}
+
 #[test]
+#[cfg(not(target_arch = "loongarch64"))]
 fn assert_cache_size() {
     assert_eq!(std::mem::size_of::<ConfigVersionCacheData>(), 4096);
+}
+
+#[test]
+#[cfg(target_arch = "loongarch64")]
+fn assert_cache_size() {
+    assert_eq!(std::mem::size_of::<ConfigVersionCacheData>(), 16384);
 }
 
 impl std::ops::Deref for ConfigVersionCacheData {
